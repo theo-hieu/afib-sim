@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Activity, Brain, HeartPulse } from "lucide-react";
 import { MathProblem } from "./components/MathProblem";
 import { BreathingMeter } from "./components/BreathingMeter";
@@ -183,9 +183,9 @@ function App() {
     }
   };
 
-  const penaltyScore = () => {
+  const penaltyScore = useCallback(() => {
     setOxygen((prev) => Math.max(0, prev - 25)); // Big penalty for timeout
-  };
+  }, []);
 
   if (!isStarted) {
     return (
