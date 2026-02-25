@@ -56,10 +56,7 @@ function App() {
     const loop = setInterval(() => {
       setTimeActive((prev) => {
         const nextTime = prev + 0.5;
-        // Trigger Afib very sporadically. Wait at least 25 seconds, then rare chance.
-        // It catches the user completely off guard when they get comfortable.
-        // 0.005 chance every 0.5s = ~100 second average wait after the initial 25s
-        if (!isAfib && nextTime > 25 && Math.random() < 0.005) {
+        if (!isAfib && nextTime > 10 && Math.random() < 0.03) {
           triggerAfib();
         }
         return nextTime;
