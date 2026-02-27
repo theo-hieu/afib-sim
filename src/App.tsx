@@ -63,7 +63,7 @@ function App() {
       });
 
       setOxygen((prev) => {
-        const dropRate = isAfib ? 6 : 1; // Faster drop rate during afib to induce panic
+        const dropRate = isAfib ? 4 : 1; // Faster drop rate during afib to induce panic
         const newO2 = prev - dropRate;
         if (newO2 <= 0) {
           die();
@@ -83,7 +83,9 @@ function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
-        setOxygen((prev) => Math.min(100, prev + (isAfib ? 3 : 5)));
+        if (!e.repeat) {
+          setOxygen((prev) => Math.min(100, prev + (isAfib ? 3 : 5)));
+        }
       }
     };
 
@@ -185,6 +187,10 @@ function App() {
     setOxygen((prev) => Math.max(0, prev - 25)); // Big penalty for timeout
   }, []);
 
+  const wrongAnswerPenalty = useCallback(() => {
+    setOxygen((prev) => Math.max(0, prev - 15)); // Penalty for wrong answer
+  }, []);
+
   if (!isStarted) {
     return (
       <div
@@ -233,13 +239,13 @@ function App() {
               <strong>Timeouts penalize oxygen heavily.</strong>
             </li>
             <li>
-              Press <strong>SPACEBAR</strong> continuously to "breathe".
+              Tap <strong>SPACEBAR</strong> repeatedly to "breathe".
             </li>
             <li>
               If your heart rate spikes, you will experience{" "}
               <strong>motor impairment</strong> and sensory changes.
             </li>
-            <li>Click the evasive red nodes to stabilize.</li>
+            <li>Click the evasive red nodes to stabilize. You need to click them multiple times until they dissapear.</li>
           </ul>
         </div>
         <button
@@ -293,8 +299,8 @@ function App() {
             fontSize: "1.2rem",
           }}
         >
-          You survived for {timeActive.toFixed(1)} seconds and solved {score}{" "}
-          problems.
+          You survived for {timeActive.toFixed(1)} seconds and got a score of{" "}
+          {score}.
         </p>
         <button
           onClick={restart}
@@ -441,6 +447,7 @@ function App() {
         <MathProblem
           isAfib={isAfib}
           onCorrect={() => setScore((s) => s + 10)}
+          onWrong={wrongAnswerPenalty}
           onTimeout={penaltyScore}
         />
 

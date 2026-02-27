@@ -3,12 +3,14 @@ import { useState, useEffect, useRef } from "react";
 type MathProblemProps = {
   isAfib: boolean;
   onCorrect: () => void;
+  onWrong: () => void;
   onTimeout: () => void;
 };
 
 export function MathProblem({
   isAfib,
   onCorrect,
+  onWrong,
   onTimeout,
 }: MathProblemProps) {
   const [num1, setNum1] = useState(0);
@@ -39,17 +41,14 @@ export function MathProblem({
 
   // Handle ticking clock
   useEffect(() => {
-    // We only enforce the timer when Afib is active to punish the user
-    // Otherwise it just sits at 10s or we can let it tick and generate new problems if they ignore it
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (isAfib) {
-            onTimeout();
-            setErrorShake(true);
-            setTimeout(() => setErrorShake(false), 400);
-          }
-          generateProblem(); // generate new problem automatically
+          onTimeout();
+          setErrorShake(true);
+          setTimeout(() => setErrorShake(false), 400);
+
+          setTimeout(() => generateProblem(), 0); // Generate problem outside state updater cycle
           return isAfib ? 4 : 10;
         }
         return prev - 1;
@@ -69,6 +68,7 @@ export function MathProblem({
       onCorrect();
       generateProblem();
     } else {
+      if (answer !== "") onWrong();
       setErrorShake(true);
       setTimeout(() => setErrorShake(false), 400);
       setAnswer("");
