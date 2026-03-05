@@ -158,6 +158,7 @@ function App() {
 
   const die = () => {
     setIsDead(true);
+    setIsAfib(false);
     heartbeatAudio.stop();
   };
 
@@ -245,7 +246,10 @@ function App() {
               If your heart rate spikes, you will experience{" "}
               <strong>motor impairment</strong> and sensory changes.
             </li>
-            <li>Click the evasive red nodes to stabilize. You need to click them multiple times until they dissapear.</li>
+            <li>
+              Click the evasive red nodes to stabilize. You need to click them
+              multiple times until they dissapear.
+            </li>
           </ul>
         </div>
         <button
