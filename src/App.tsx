@@ -14,6 +14,10 @@ function App() {
   const [isAfib, setIsAfib] = useState(false);
   const [oxygen, setOxygen] = useState(100);
   const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
   const [timeActive, setTimeActive] = useState(0);
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(
     null,
@@ -55,15 +59,20 @@ function App() {
 
     const loop = setInterval(() => {
       setTimeActive((prev) => {
+        const difficultyLevel = Math.floor(scoreRef.current / 100);
         const nextTime = prev + 0.5;
-        if (!isAfib && nextTime > 10 && Math.random() < 0.03) {
+        const afibChance = 0.03 + difficultyLevel * 0.01;
+        if (!isAfib && nextTime > 10 && Math.random() < afibChance) {
           triggerAfib();
         }
         return nextTime;
       });
 
       setOxygen((prev) => {
-        const dropRate = isAfib ? 4 : 1; // Faster drop rate during afib to induce panic
+        const difficultyLevel = Math.floor(scoreRef.current / 100);
+        const dropRate = isAfib
+          ? 4 + difficultyLevel
+          : 1 + difficultyLevel * 0.5; // Faster drop rate during afib to induce panic
         const newO2 = prev - dropRate;
         if (newO2 <= 0) {
           die();
@@ -142,10 +151,13 @@ function App() {
   useEffect(() => {
     if (!isAfib || !targetPos) return;
 
-    // Target moves away/randomly every 1.5 seconds, making it hard to click
+    const difficultyLevel = Math.floor(scoreRef.current / 100);
+    // Target moves away/randomly faster as difficulty increases, making it hard to click
+    const moveInterval = Math.max(500, 1500 - difficultyLevel * 200);
+
     const moveTimer = setInterval(() => {
       spawnTarget();
-    }, 1500);
+    }, moveInterval);
 
     return () => clearInterval(moveTimer);
   }, [isAfib, targetPos]);
@@ -450,6 +462,7 @@ function App() {
       >
         <MathProblem
           isAfib={isAfib}
+          score={score}
           onCorrect={() => setScore((s) => s + 10)}
           onWrong={wrongAnswerPenalty}
           onTimeout={penaltyScore}

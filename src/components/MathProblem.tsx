@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 type MathProblemProps = {
   isAfib: boolean;
+  score: number;
   onCorrect: () => void;
   onWrong: () => void;
   onTimeout: () => void;
@@ -9,6 +10,7 @@ type MathProblemProps = {
 
 export function MathProblem({
   isAfib,
+  score,
   onCorrect,
   onWrong,
   onTimeout,
@@ -22,17 +24,23 @@ export function MathProblem({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateProblem = () => {
+    const difficultyLevel = Math.floor(score / 100);
     const ops = ["+", "-", "*"];
     const selectedOp = ops[Math.floor(Math.random() * ops.length)];
     setOperator(selectedOp);
 
-    // increase difficulty slightly based on afib
-    const max = isAfib ? 20 : 10;
+    // increase difficulty slightly based on afib and score
+    const baseMax = isAfib ? 20 : 10;
+    const max = baseMax + difficultyLevel * 5;
 
     setNum1(Math.floor(Math.random() * max) + 1);
     setNum2(Math.floor(Math.random() * max) + 1);
     setAnswer("");
-    setTimeLeft(isAfib ? 4 : 10); // Punishing ticking clock! 4 seconds during Afib.
+
+    // Decrease time by 0.5s for every difficulty tier (1 tier = score of 100)
+    const baseTime = isAfib ? 4 : 10;
+    const allowedTime = Math.max(2, baseTime - Math.floor(difficultyLevel / 2));
+    setTimeLeft(allowedTime);
   };
 
   useEffect(() => {
@@ -49,13 +57,15 @@ export function MathProblem({
           setTimeout(() => setErrorShake(false), 400);
 
           setTimeout(() => generateProblem(), 0); // Generate problem outside state updater cycle
-          return isAfib ? 4 : 10;
+          const difficultyLevel = Math.floor(score / 100);
+          const baseTime = isAfib ? 4 : 10;
+          return Math.max(2, baseTime - Math.floor(difficultyLevel / 2));
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [isAfib, onTimeout]);
+  }, [isAfib, onTimeout, score]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
